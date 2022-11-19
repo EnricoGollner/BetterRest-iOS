@@ -13,7 +13,6 @@ struct ContentView: View {
     @State private var sleepAmount = 8.0
     @State private var coffeeAmount = 1
     
-    @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showingAlert = false
     
@@ -25,41 +24,7 @@ struct ContentView: View {
         return Calendar.current.date(from: components) ?? Date.now
     } // Contains a date value referencing 7 a.m of the current day
     
-    var body: some View {
-        NavigationStack(){
-            Form{
-                VStack(alignment: .leading, spacing: 0){
-                    Text("When do you want to wake up?")
-                        .font(.headline)
-                    DatePicker("Please, enter a number", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                }
-                
-                VStack(alignment: .leading, spacing: 0){
-                    Text("Desired amount of sleep")
-                        .font(.headline)
-                    Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
-                }
-                
-                VStack(alignment: .leading, spacing: 0){
-                    Text("Daily coffee intake")
-                        .font(.headline)
-                    Stepper(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups", value: $coffeeAmount, in: 1...20)
-                }
-            }
-            .navigationTitle("BetterRest")
-            .toolbar{
-                Button("Calculate", action: calculateBedTime)
-            }
-            .alert(alertTitle, isPresented: $showingAlert){
-                Button("OK"){ }  // Will just dismiss
-            } message: {
-                Text(alertMessage)
-            }
-        }
-    }
-    
-    func calculateBedTime(){
+    var result: String{
         // Making an instance of our sleep calculator class:
         do {
             let config = MLModelConfiguration()
@@ -73,15 +38,57 @@ struct ContentView: View {
             let prediction = try model.prediction(wake: Double(hour + minute), estimatedSleep: sleepAmount, coffee: Double(coffeeAmount)) // Here we'll have a prediction of how much sleep they actually need
             
             let sleepTime = wakeUp - prediction.actualSleep  // Converting to know the bedTime
-            alertTitle = "Your ideal bedtime is..."
-            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+            
+            return sleepTime.formatted(date: .omitted, time: .shortened)
             
         } catch{
-            alertTitle = "Error"
+            showingAlert = true
             alertMessage = "Sorry, there was a problem calculating your bedtime."
         }
         
-        showingAlert = true
+        return ""
+    }
+    
+    var body: some View {
+        NavigationStack(){
+            Form{
+                Section{
+                    Text("When do you want to wake up?")
+                        .font(.headline)
+                    DatePicker("Please, enter a number", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                }
+                
+                Section{
+                    Text("Desired amount of sleep")
+                        .font(.headline)
+                    Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
+                }
+                
+                Section{
+                    Text("Daily coffee intake")
+                        .font(.headline)
+                    
+                    Picker("Select the amount of cup", selection: $coffeeAmount){
+                        ForEach(1..<21){
+                            Text($0 == 1 ? "\($0) cup" : "\($0) cups")
+                        }
+                    }
+                }
+                
+                Section{
+                    Text("Your ideal bedtime is... \(result)")
+                        .font(.headline)
+                    
+                }
+            }
+            .navigationTitle("BetterRest")
+            .alert("Sorry!", isPresented: $showingAlert){
+                Button("OK"){}
+            } message: {
+                Text(alertMessage)
+            }
+        }
     }
 }
 
