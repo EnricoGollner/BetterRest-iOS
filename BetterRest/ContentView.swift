@@ -38,8 +38,9 @@ struct ContentView: View {
             let prediction = try model.prediction(wake: Double(hour + minute), estimatedSleep: sleepAmount, coffee: Double(coffeeAmount)) // Here we'll have a prediction of how much sleep they actually need
             
             let sleepTime = wakeUp - prediction.actualSleep  // Converting to know the bedTime
+            let bedTime = sleepTime.formatted(date: .omitted, time: .shortened)
             
-            return sleepTime.formatted(date: .omitted, time: .shortened)
+            return bedTime
             
         } catch{
             showingAlert = true
@@ -52,23 +53,16 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(){
             Form{
-                Section{
-                    Text("When do you want to wake up?")
-                        .font(.headline)
+                Section(header: Text("When do you want to wake up?")){
                     DatePicker("Please, enter a number", selection: $wakeUp, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                 }
                 
-                Section{
-                    Text("Desired amount of sleep")
-                        .font(.headline)
+                Section(header: Text("Desired amount of sleep")){
                     Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
                 }
                 
-                Section{
-                    Text("Daily coffee intake")
-                        .font(.headline)
-                    
+                Section(header: Text("Daily coffee intake")){
                     Picker("Select the amount of cup", selection: $coffeeAmount){
                         ForEach(1..<21){
                             Text($0 == 1 ? "\($0) cup" : "\($0) cups")
