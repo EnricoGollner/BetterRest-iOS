@@ -1,0 +1,9 @@
+{
+  "MLModelCreatorDefinedKey" : {
+    "com.apple.createml.app.tag" : "99.2",
+    "com.apple.createml.version" : "13.0.1",
+    "com.apple.createml.app.version" : "4.0",
+    "com.apple.coreml.model.preview.type" : "tabularRegressor"
+  },
+  "MLModelAuthorKey" : "Enrico Sousa Gollner"
+}
